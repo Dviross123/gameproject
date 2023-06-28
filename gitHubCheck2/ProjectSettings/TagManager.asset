@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - tp
+  - obs
   layers:
   - Default
   - TransparentFX

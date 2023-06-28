@@ -10,10 +10,11 @@ public class PlayerMovement : MonoBehaviour
     private bool isFacingRight = true;
     private int Jumps = 0;
     public int maxJumps = 1;
+    public float fastFallpower = -0.5f;
 
     public bool canDash = true;
     public bool isDashing;
-    private float dashingPower = 20f;
+    public float dashingPower = 20f;
     private float dashingTime = 0.2f;
     private float dashingCooldown = 0.2f;
     private float extraMomentum;
@@ -34,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpingTime = 0.2f;
     private float wallJumpingCounter;
     private float wallJumpingDuration = 0.4f;
-    private Vector2 wallJumpingPower = new Vector2(6f, 16f);
+    public Vector2 wallJumpingPower = new Vector2(6f, 16f);
 
 
     [SerializeField] public Rigidbody2D rb;
@@ -108,9 +109,14 @@ public class PlayerMovement : MonoBehaviour
         if (IsGrounded())
         {
             Jumps = 0;
-            canDash = true;
             wallJumpingAmount = 0f;
         }
+        if (IsGrounded() || dashingCooldown <= 0f) 
+        {
+            canDash = true;
+            dashingCooldown = 0.2f;
+        }
+
         //always checks wall slide, jump and momentum
         WallSlide();
         WallJump();
@@ -124,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButton("Fire2") && !isWallJumping && !isWallSliding)
         {
             isFastFalling = true;
-            rb.velocity = new Vector2(0f, rb.velocity.y - 0.5f);
+            rb.velocity = new Vector2(0f, rb.velocity.y + fastFallpower);
             if (IsGrounded())
                 extraMomentum = 0;
         }
@@ -160,6 +166,7 @@ public class PlayerMovement : MonoBehaviour
     private bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+
     }
     //checks when walled
     private bool IsWalled()
@@ -254,7 +261,7 @@ public class PlayerMovement : MonoBehaviour
         canDash = false;
         isDashing = true;
         float originalGravity = rb.gravityScale;
-        gravityReturned = false;
+        //gravityReturned = false;
         rb.gravityScale = 0f;
         if (Input.GetAxisRaw("Horizontal") == 0 && Input.GetAxisRaw("Vertical") == 0)
         {

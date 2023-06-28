@@ -5,11 +5,15 @@ using UnityEngine;
 public class playerTp : MonoBehaviour
 {
     private GameObject currentTeleporter;
+    public GameObject player;
     private float tpTimer;
     public float tpTimerReset;
     private bool canTp = true;
     private float life;
     public float resetLife;
+    public PlayerMovement PlayerMovement;
+
+    [SerializeField] public Rigidbody2D rb;
 
     private void Start()
     {
@@ -45,6 +49,12 @@ public class playerTp : MonoBehaviour
             if (canTp) 
             {
                 transform.position = currentTeleporter.GetComponent<teleport>().GetDestinatrion().position;
+                player.transform.rotation *= Quaternion.Euler(0f, 0f, 180f);
+
+                rb.gravityScale *= -1;
+                PlayerMovement.fastFallpower *= -1;
+                PlayerMovement.jumpingPower *= -1;
+                PlayerMovement.wallJumpingPower *= -1;
                 tpTimer = tpTimerReset;
             }
             
@@ -52,6 +62,7 @@ public class playerTp : MonoBehaviour
         if (collision.CompareTag("obs")) 
         {
             life -= resetLife;
+            Debug.Log("player Die");
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
