@@ -12,8 +12,10 @@ public class PlayerMovement : MonoBehaviour
     public int maxJumps = 1;
     public float fastFallpower = -0.5f;
 
+
+    public float originalGravity= 3f;
     public bool canDash = true;
-    public bool isDashing;
+    public bool isDashing ;
     public float dashingPower = 20f;
     private float dashingTime = 0.2f;
     private float dashingCooldown = 0.2f;
@@ -260,31 +262,51 @@ public class PlayerMovement : MonoBehaviour
     {
         canDash = false;
         isDashing = true;
-        float originalGravity = rb.gravityScale;
-        //gravityReturned = false;
+         originalGravity = rb.gravityScale;
+        gravityReturned = false;
         rb.gravityScale = 0f;
-        if (Input.GetAxisRaw("Horizontal") == 0 && Input.GetAxisRaw("Vertical") == 0)
+
+        Vector2 dashDirection = Vector2.zero;
+
+        // Check input for dash direction
+        if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
         {
-            rb.velocity = new Vector2(transform.localScale.x * dashingPower, Input.GetAxisRaw("Vertical") * dashingPower);
+            dashDirection.x = Input.GetAxisRaw("Horizontal");
+            dashDirection.y = Input.GetAxisRaw("Vertical");
         }
         else
         {
-            rb.velocity = new Vector2(Input.GetAxisRaw("Horizontal") * dashingPower, Input.GetAxisRaw("Vertical") * dashingPower);
+            dashDirection.x = transform.localScale.x;
         }
-        //when not wave dashing but dashing delete momentum
-        if (Input.GetAxisRaw("Horizontal") == 0 || Input.GetAxisRaw("Vertical") >= 0)
+
+        rb.velocity = dashDirection.normalized * dashingPower;
+
+        // Reset momentum if not wave dashing
+        if (dashDirection.x == 0 || dashDirection.y >= 0)
+        {
             extraMomentum = 0;
+        }
 
         tr.emitting = true;
         yield return new WaitForSeconds(dashingTime);
         tr.emitting = false;
-        rb.gravityScale = 10f;
-        yield return new WaitForSeconds(0.1f);
+
+        // Restore gravity gradually
+        float elapsedTime = 0f;
+        float transitionDuration = 0.1f;
+        while (elapsedTime < transitionDuration)
+        {
+            rb.gravityScale = Mathf.Lerp(0f, originalGravity, elapsedTime / transitionDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
         rb.gravityScale = originalGravity;
         gravityReturned = true;
+
         isDashing = false;
         yield return new WaitForSeconds(dashingCooldown);
     }
+
 
     private void Momentum()
     {

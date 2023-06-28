@@ -6,6 +6,8 @@ TagManager:
   tags:
   - tp
   - obs
+  - negativeTp
+  - positiveTp
   layers:
   - Default
   - TransparentFX
