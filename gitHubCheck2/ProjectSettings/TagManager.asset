@@ -8,6 +8,8 @@ TagManager:
   - obs
   - negativeTp
   - positiveTp
+  - addDash
+  - Ground
   layers:
   - Default
   - TransparentFX
