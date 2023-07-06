@@ -4,25 +4,28 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private float horizontal;
+    public float horizontal;
     public float speed = 12f;
     public float jumpingPower = 16f;
     private bool isFacingRight = true;
+    public bool isJumping;
     private int Jumps = 0;
     public int maxJumps = 1;
-    public float fastFallpower = -0.5f;
 
-    public float dashCounter = 1f;
-    public float originalGravity= 3f;
+    public bool IsBouncing = false;
+    public float BouncingSpeed = 0f;
+    public float BouncingDirection = 1f;
+
+    public float originalGravity;
     public bool canDash = true;
-    public bool isDashing ;
+    public bool isDashing;
     public float dashingPower = 20f;
     private float dashingTime = 0.2f;
     private float dashingCooldown = 0.2f;
     private float extraMomentum;
     private float extraMomentumDirection;
     private bool gravityReturned = true;
-    public bool isWaveDashing;
+    public float dashCounter = 1f;
 
     public bool isWallSliding;
     private float wallSlidingSpeed = 1f;
@@ -30,6 +33,8 @@ public class PlayerMovement : MonoBehaviour
     private bool canSlamStorage;
 
     private bool isFastFalling = false;
+    private bool canFastFall = true;
+    public float fastFallpower = 5f;
 
     private bool isWallJumping;
     private float wallJumpingAmount = 0f;
@@ -38,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpingTime = 0.2f;
     private float wallJumpingCounter;
     private float wallJumpingDuration = 0.4f;
-    public Vector2 wallJumpingPower = new Vector2(6f, 16f);
+    private Vector2 wallJumpingPower = new Vector2(6f, 16f);
 
 
     [SerializeField] public Rigidbody2D rb;
@@ -47,6 +52,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private TrailRenderer tr;
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
+
+
+    private float preVel = 0f;
+    public float slidingSpeed = 18f;
+    public bool IsSliding = false;
+    private bool isJumpSliding = false;
+    private float slidingDirection = 0f;
+    private bool JumpSliding = false;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -58,85 +73,62 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         //kills the player if he is too low
-        if (transform.localPosition.y <= -50)
-        {
-            PlayerDied();
-        }
+        
         //resets extra momentum direction when the is no extra momentum
         if (extraMomentum == 0)
             extraMomentumDirection = transform.localScale.x;
-        //sets the max momentum to 2
-        if (extraMomentum > 20)
-            extraMomentum = 20;
+        //sets the max momentum to 40
+        if (extraMomentum > 40)
+            extraMomentum = 40;
         //limits the slam storage to 1 time after momentum is higher than 20
         if (extraMomentum < 20)
             canSlamStorage = true;
-        //makes sure the momentum isnt negitive
+        //makes sure the momentum isnt negitive to negate possible errors (just to be safe)
         if (extraMomentum < 0)
             extraMomentum = 0;
         //lower momentum if moving to other direction
         if (extraMomentumDirection == horizontal * -1 && extraMomentumDirection != 0 && extraMomentum > 0.1f)
-            extraMomentum -= 0.05f;
+        {
+            if (extraMomentum > 24f)
+                extraMomentum = 24f;
+            extraMomentum -= 0.1f;
+        }
         horizontal = Input.GetAxisRaw("Horizontal");
+
         //checks if you can jump
         if (Input.GetButtonDown("Jump") && Jumps < maxJumps && !isFastFalling)
         {
-            rb.velocity = new Vector2(rb.velocity.x * Time.deltaTime, jumpingPower);
+            isJumping = true;
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower + rb.velocity.y / 4);
             Jumps++;
         }
-
-
-        ////if you let go of jump while jumping stop the jump early
+        else 
+        {
+            isJumping = false;
+        }
+        //if you let go of jump while jumping stop the jump early
         //if (Input.GetButtonUp("Jump") && rb.velocity.y > 0f && !isDashing)
         //{
         //    rb.velocity = new Vector2(rb.velocity.x, -1f);
         //}
-
-
         //checks when you can dash
-        if (Input.GetButtonDown("Fire3") && canDash && gravityReturned && !isFastFalling && dashCounter>0)
+        if (Input.GetButtonDown("Fire3") && canDash && gravityReturned && !isFastFalling&& dashCounter>0f)
         {
             StartCoroutine(Dash());
         }
-        //checks when the player does a wave dash
-        if (isDashing && Input.GetButtonDown("Jump") && (Input.GetAxisRaw("Vertical") < 0  || (IsGrounded() && Input.GetAxisRaw("Vertical") < 0)))
-        {
 
-            if (extraMomentum <= 15f)
-            {
-                extraMomentum = 24f;
-            }
-            else
-            {
-                extraMomentum += 16;
-            }
-
-        
-            rb.velocity = new Vector2(rb.velocity.x + extraMomentum * transform.localScale.x * Time.deltaTime, rb.velocity.y);
-            extraMomentumDirection = transform.localScale.x;
-            isWaveDashing = true;
-        }
-       
         //gives back jump and dash when grounded
         if (IsGrounded())
         {
             Jumps = 0;
-            wallJumpingAmount = 0f;
-        }
-        if (IsGrounded() || dashingCooldown <= 0f ) 
-        {
-            if (dashCounter == 0f)
-            {
-                dashCounter++;
-            }
-            else if (dashCounter < 0f) 
-            {
-                dashCounter++;
-            }
             canDash = true;
-            dashingCooldown = 0.2f;
+            if (dashCounter < 1f) 
+            {
+                dashCounter++;
+            }
+            wallJumpingAmount = 0f;
+            BouncingSpeed = 0f;
         }
-
         //always checks wall slide, jump and momentum
         WallSlide();
         WallJump();
@@ -146,47 +138,92 @@ public class PlayerMovement : MonoBehaviour
         {
             Flip();
         }
+
+
         //fast fall
-        if (Input.GetButton("Fire2") && !isWallJumping && !isWallSliding)
+        if (Input.GetButton("Fire2") && !isWallJumping && !isWallSliding && !IsGrounded() && canFastFall)
         {
             isFastFalling = true;
-            rb.velocity = new Vector2(0f, rb.velocity.y + fastFallpower);
             if (IsGrounded())
                 extraMomentum = 0;
         }
         //cancel fast fall
-        if (Input.GetButtonUp("Fire2") && isFastFalling)
+        if ((Input.GetButtonUp("Fire2") || IsGrounded()) && isFastFalling)
         {
             isFastFalling = false;
-            rb.velocity = new Vector2(rb.velocity.x, 0f);
+        }
+        //sliding
+        if (Input.GetButtonDown("Fire2") && IsGrounded())
+        {
+            preVel = rb.velocity.x;
+            preVel = Mathf.Abs(preVel);
+            IsSliding = true;
+            slidingDirection = transform.localScale.x;
+            StartCoroutine(StopSliding());
+        }
+        //cancel slide
+        if ((Input.GetButtonUp("Fire2") || !IsGrounded() || isJumpSliding) && IsSliding)
+        {
+            IsSliding = false;
+        }
+        if (IsSliding && Input.GetButtonDown("Jump"))
+        {
+            IsSliding = false;
+            isJumpSliding = true;
+            canFastFall = false;
+            JumpSliding = true;
+            StartCoroutine(JumpSlide());
         }
 
     }
 
     private void FixedUpdate()
     {
-        Debug.Log(extraMomentum);
-        //if is dashing or fast falling on ground do nothing
-        if (isDashing || (isFastFalling && IsGrounded()))
+        //if is dashing do nothing
+        if (isDashing)
         {
             return;
         }
         //if fast falling change momentum accordingly
-        if (isFastFalling)
+        else if (isFastFalling)
         {
-            rb.velocity = new Vector2(horizontal * speed / 3 * Time.deltaTime, rb.velocity.y);
+            rb.velocity = new Vector2(horizontal * speed / 3, rb.velocity.y+fastFallpower);
         }
-        //other than that normal
-        else if (!isWallJumping)
+        else if (IsSliding)
         {
-            rb.velocity = new Vector2(horizontal * speed + extraMomentum * extraMomentumDirection * Time.deltaTime, rb.velocity.y);
+            rb.velocity = new Vector2((slidingSpeed + preVel / 3) * slidingDirection, 0);
         }
+        else if (isJumpSliding)
+        {
+            rb.velocity = new Vector2((slidingSpeed + preVel / 3) * slidingDirection, jumpingPower);
+            isJumpSliding = false;
+        }
+        //other than that and when starting a bounce normal
+        else if (!isWallJumping && !JumpSliding)
+        {
+            rb.velocity = new Vector2(horizontal * speed + extraMomentum * extraMomentumDirection, rb.velocity.y);
+        }
+    }
+
+
+    public IEnumerator StopSliding()
+    {
+        yield return new WaitForSeconds(1f);
+        IsSliding = false;
+    }
+
+
+    public IEnumerator JumpSlide()
+    {
+        
+        yield return new WaitForSeconds(0.5f);
+        canFastFall = true;
+        JumpSliding = false;
     }
     //checks when grounded
     public bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-
     }
     //checks when walled
     public bool IsWalled()
@@ -194,11 +231,11 @@ public class PlayerMovement : MonoBehaviour
         return Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallLayer); ;
     }
 
-    public void WallSlide()
+    private void WallSlide()
     {
         if (IsWalled() && !IsGrounded() && horizontal != 0f && !isDashing)
         {
-            Debug.Log("walled");
+
             isWallSliding = true;
             if (extraMomentum > 30)
                 rb.velocity = new Vector2(rb.velocity.x, wallSlidingSpeed * 24);
@@ -218,7 +255,6 @@ public class PlayerMovement : MonoBehaviour
             isWallJumping = false;
             wallJumpingDirection = -transform.localScale.x;
             wallJumpingCounter = wallJumpingTime;
-
             CancelInvoke(nameof(StopWallJumping));
         }
         else
@@ -230,7 +266,6 @@ public class PlayerMovement : MonoBehaviour
         {
             extraMomentum += 36f;
             canSlamStorage = false;
-            
         }
 
         if (Input.GetButtonDown("Jump") && wallJumpingCounter > 0 && wallJumpingAmount < wallJumpingAllowed)
@@ -239,8 +274,9 @@ public class PlayerMovement : MonoBehaviour
             Jumps = 0;
             wallJumpingAmount++;
             extraMomentumDirection *= -1;
-            rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x * Time.deltaTime, wallJumpingPower.y );
+            rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
             wallJumpingCounter = 0f;
+            if (canSlamStorage) extraMomentum = 0f;
 
             if (transform.localScale.x != wallJumpingDirection)
             {
@@ -270,73 +306,74 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void PlayerDied()
-    {
-        //LevelManager.instance.GameOver();
-        gameObject.SetActive(false);
-    }
 
 
     private IEnumerator Dash()
     {
-        if (dashCounter<= 0f)
-        {
-            canDash = false;
-        }
         dashCounter--;
+        canDash = false;
         isDashing = true;
         originalGravity = rb.gravityScale;
         gravityReturned = false;
         rb.gravityScale = 0f;
-
-        Vector2 dashDirection = Vector2.zero;
-
-        // Check input for dash direction
-        if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+        //if using controller
+        float hori = 0f, vert = 0f;
+        if (Input.GetAxisRaw("Horizontal") < 0)
+            hori = -1f;
+        else if (Input.GetAxisRaw("Horizontal") > 0)
+            hori = 1f;
+        else hori = 0f;
+        if (Input.GetAxisRaw("Vertical") < 0)
+            vert = -1f;
+        else if (Input.GetAxisRaw("Vertical") > 0)
+            vert = 1f;
+        else vert = 0f;
+        if (hori == 0 && vert == 0)
         {
-            dashDirection.x = Input.GetAxisRaw("Horizontal");
-            dashDirection.y = Input.GetAxisRaw("Vertical");
+            rb.velocity = new Vector2(transform.localScale.x * dashingPower, hori * dashingPower);
+        }
+        //when not wave dashing but dashing delete momentum
+        else if (hori == 0 || vert >= 0)
+        {
+            rb.velocity = new Vector2(hori * dashingPower, vert * dashingPower);
+            extraMomentum = 0;
         }
         else
         {
-            dashDirection.x = transform.localScale.x;
-        }
+            rb.velocity = new Vector2(hori * dashingPower + hori * extraMomentum, vert * dashingPower);
+            if (extraMomentum <= 6f)
+                extraMomentum = 22f;
+            else
+                extraMomentum += 16f;
+            extraMomentumDirection = transform.localScale.x;
 
-        rb.velocity = dashDirection.normalized * dashingPower;
-
-        // Reset momentum if not wave dashing
-        if (dashDirection.x == 0 || dashDirection.y >= 0)
-        {
-            extraMomentum = 0;
         }
 
         tr.emitting = true;
         yield return new WaitForSeconds(dashingTime);
         tr.emitting = false;
-
-        // Restore gravity gradually
-        float elapsedTime = 0f;
-        float transitionDuration = 0.1f;
-        while (elapsedTime < transitionDuration)
-        {
-            rb.gravityScale = Mathf.Lerp(0f, originalGravity, elapsedTime / transitionDuration);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
+        rb.gravityScale = 10f;
+        yield return new WaitForSeconds(0.1f);
         rb.gravityScale = originalGravity;
         gravityReturned = true;
-
         isDashing = false;
         yield return new WaitForSeconds(dashingCooldown);
     }
 
-
     private void Momentum()
     {
+        if (BouncingSpeed > 4f && !IsBouncing)
+        {
+            BouncingSpeed -= 1f;
+            if (BouncingDirection == -transform.localScale.x && BouncingSpeed > 0)
+            {
+                BouncingSpeed = 0f;
+            }
+        }
+
         if (extraMomentum > 0)
         {
             extraMomentum -= 0.005f;
-            new WaitForSeconds(0.2f);
             if (IsGrounded())
             {
                 extraMomentum -= 0.1f;
@@ -350,6 +387,12 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.tag == "enemy" && isDashing)
         {
             Destroy(collision.gameObject);
+        }
+        if (collision.gameObject.layer == 3)
+        {
+            Jumps = 0;
+            canDash = true;
+            wallJumpingAmount = 0f;
         }
     }
 

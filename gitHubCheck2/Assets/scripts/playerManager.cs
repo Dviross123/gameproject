@@ -14,22 +14,109 @@ public class playerManager: MonoBehaviour
     private float life;
     public float resetLife;
     public PlayerMovement PlayerMovement;
+    public float jumpTime;
+    public float jumpTimeReset;
+    public bool startTimer=false;
+
+
 
 
     [SerializeField] public Rigidbody2D rb;
 
     public int respawn;
 
+
+    public Animator animator;
+
     private void Start()
     {
         tpTimer = tpTimerReset;
         life = resetLife;
+        jumpTime = jumpTimeReset;
+
     }
 
     void Update()
     {
+        //animations
 
-        tpTimer-=Time.deltaTime;
+        
+        //run
+        if (Input.GetButton("Horizontal"))
+        {
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
+        }
+
+        //wall slide
+        if (PlayerMovement.isWallSliding)
+        {
+            animator.SetBool("isWallSliding", true);
+            animator.SetBool("isRunning", false);
+        }
+        else 
+        {
+            animator.SetBool("isWallSliding", false);
+        }
+
+        //jump
+        if ((Input.GetButton("Jump") && rb.velocity.y>0) || Input.GetButton("Fire3") && rb.velocity.y > 0)
+        {
+            animator.SetBool("isJumping", true);
+
+        }
+        if(PlayerMovement.IsGrounded()|| PlayerMovement.IsWalled()) 
+        {
+            animator.SetBool("isJumping", false);
+        }
+
+        //fall
+        if (rb.velocity.y < 0 && !PlayerMovement.IsGrounded() && !PlayerMovement.IsWalled() && !PlayerMovement.isJumping)
+        {
+            animator.SetBool("isFalling", true);
+        }
+        else 
+        {
+            animator.SetBool("isFalling", false);
+        }
+        //slide
+        if (PlayerMovement.IsSliding && PlayerMovement.IsGrounded())
+        {
+            animator.SetBool("isSliding", true);
+        }
+        else 
+        {
+            animator.SetBool("isSliding", false);
+        }
+
+     
+
+
+ 
+
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (transform.localPosition.y <= -50)
+        {
+            SceneManager.LoadScene(respawn);
+        }
+
+        tpTimer -=Time.deltaTime;
         if (tpTimer <= 0f)
         {
             canTp = true;
@@ -42,7 +129,7 @@ public class playerManager: MonoBehaviour
         if (life < 0) 
         {
             Debug.Log("player Die");
-            //kill player
+            SceneManager.LoadScene(respawn);
         }
         
     }
@@ -115,6 +202,8 @@ public class playerManager: MonoBehaviour
             Destroy(collision.gameObject);
 
         }
+
+       
     }
 
    
