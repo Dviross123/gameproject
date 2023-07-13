@@ -11,36 +11,46 @@ public class playerManager: MonoBehaviour
     public float tpTimer;
     public float tpTimerReset;
     public bool canTp = true;
-    private float life;
-    public float resetLife;
+    public float health;
+    public float resetHealth;
     public PlayerMovement PlayerMovement;
     public float jumpTime;
     public float jumpTimeReset;
     public bool startTimer=false;
+    public float smallBoostPower;
 
 
-
-
+    private GameObject smallSlime;
     [SerializeField] public Rigidbody2D rb;
 
     public int respawn;
 
 
     public Animator animator;
+    public Animator SlimeAnimator;
+
+    public ParticleSystem smallSlimeExplosion;
+
+    public bool killSmallSlime=false;
 
     private void Start()
     {
         tpTimer = tpTimerReset;
-        life = resetLife;
+        health = resetHealth;
         jumpTime = jumpTimeReset;
 
     }
 
     void Update()
     {
+        //kill player 
+        if (health <= 0f) 
+        {
+            SceneManager.LoadScene(respawn);
+        }
+
         //animations
 
-        
         //run
         if (Input.GetButton("Horizontal"))
         {
@@ -97,18 +107,6 @@ public class playerManager: MonoBehaviour
 
  
 
-       
-
-
-
-
-
-
-
-
-
-
-
 
 
         if (transform.localPosition.y <= -50)
@@ -126,7 +124,7 @@ public class playerManager: MonoBehaviour
             canTp = false;
         }
 
-        if (life < 0) 
+        if (health < 0) 
         {
             Debug.Log("player Die");
             SceneManager.LoadScene(respawn);
@@ -135,6 +133,12 @@ public class playerManager: MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Bullet")) 
+        {
+            health--;
+            Destroy(collision.gameObject);
+        }
+
         if (collision.CompareTag("positiveTp"))
         {
             Debug.Log("touch tp");
@@ -203,10 +207,43 @@ public class playerManager: MonoBehaviour
 
         }
 
-       
+        
+
+
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+
+        if (collision.gameObject.CompareTag("smallSlime"))
+        {
+            if (PlayerMovement.isFastFalling)
+            {             
+                 rb.velocity = new Vector2(rb.velocity.x, smallBoostPower);  
+                collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
+                smallSlimeExplosion.Play();
+                killSmallSlime = true;
+                StartCoroutine(KillWait(collision));
+                collision.gameObject.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePositionY;
+                smallSlime = collision.gameObject;
+                SlimeAnimator.SetBool("isDead", true);
+            }
+
+            else if (collision.gameObject.CompareTag("smallSlime") && !PlayerMovement.isDashing && !PlayerMovement.isFastFalling)
+            {
+                SceneManager.LoadScene(respawn);
+            }
+        }
     }
 
-   
 
-   
+
+    public IEnumerator KillWait(Collision2D collision)   
+    {  
+        yield return new WaitForSeconds(.7f);
+        
+        Destroy(smallSlime);
+        killSmallSlime = false;
+    }
+        
+
 }

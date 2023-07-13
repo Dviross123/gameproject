@@ -10,6 +10,7 @@ TagManager:
   - positiveTp
   - addDash
   - Ground
+  - smallSlime
   layers:
   - Default
   - TransparentFX

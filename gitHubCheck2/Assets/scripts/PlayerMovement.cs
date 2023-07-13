@@ -32,8 +32,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool canSlamStorage;
 
-    private bool isFastFalling = false;
-    private bool canFastFall = true;
+    public bool isFastFalling = false;
+    public bool canFastFall = true;
     public float fastFallpower = 5f;
 
     private bool isWallJumping;
@@ -61,6 +61,8 @@ public class PlayerMovement : MonoBehaviour
     private float slidingDirection = 0f;
     private bool JumpSliding = false;
 
+
+   
 
 
     // Start is called before the first frame update
@@ -94,6 +96,8 @@ public class PlayerMovement : MonoBehaviour
             extraMomentum -= 0.1f;
         }
         horizontal = Input.GetAxisRaw("Horizontal");
+        if (horizontal > 0) horizontal = 1;
+        if (horizontal < 0) horizontal = -1;
 
         //checks if you can jump
         if (Input.GetButtonDown("Jump") && Jumps < maxJumps && !isFastFalling)

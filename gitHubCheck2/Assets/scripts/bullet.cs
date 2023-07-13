@@ -9,9 +9,14 @@ public class bullet : MonoBehaviour
     private Transform player;
     private Vector2 target;
     public float bulletLifeTime;
+    public GameObject Player;
+    private playerManager player1;
+
 
     void Start()
     {
+        player1 = Player.GetComponent<playerManager>();
+
         player = GameObject.FindGameObjectWithTag("Player").transform;
 
         target = new Vector2(player.position.x, player.position.y);
@@ -33,11 +38,5 @@ public class bullet : MonoBehaviour
         }
     }
 
-     void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Player")) 
-        {
-            Destroy(gameObject);
-        }
-    }
+   
 }

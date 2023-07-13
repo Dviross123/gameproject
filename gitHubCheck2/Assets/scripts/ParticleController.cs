@@ -9,8 +9,7 @@ public class ParticleController : MonoBehaviour
     [SerializeField] ParticleSystem movementParticle;
     [SerializeField] ParticleSystem fallParticle;
     [SerializeField] ParticleSystem wallParticle;
-    [SerializeField] ParticleSystem dashBurstParticle;
-    [SerializeField] ParticleSystem waveDashBurstParticle;
+
 
     [Range(0, 10)]
     [SerializeField] int occurAfterVelocity;
