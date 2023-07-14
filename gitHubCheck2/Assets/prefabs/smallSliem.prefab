@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5168593369561221493}
   - component: {fileID: 5168593369561221494}
   - component: {fileID: 5168593369561221495}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: smallSliem
   m_TagString: smallSlime
   m_Icon: {fileID: 0}
@@ -167,7 +167,7 @@ GameObject:
   - component: {fileID: 5168593370883724985}
   - component: {fileID: 5168593370883724991}
   - component: {fileID: 5168593370883724984}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: death explusion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5036,7 +5036,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5168593371138264035}
   - component: {fileID: 5168593371138264034}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Light 2D (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

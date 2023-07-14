@@ -12,6 +12,7 @@ public class enemyshoot : MonoBehaviour
     public float startTimeBtwShots;
 
     public GameObject bullet;
+    public Transform playerTrans;
 
     void Start()
     {
@@ -33,6 +34,17 @@ public class enemyshoot : MonoBehaviour
             timeBtwShots -= Time.deltaTime;
         }
         }
-
+        if (playerTrans.position.x < transform.position.x)
+        {
+            Vector3 localScale = transform.localScale;
+            localScale.x = -1f;
+            transform.localScale = localScale;
+        }
+        else 
+        {
+            Vector3 localScale = transform.localScale;
+            localScale.x = 1f;
+            transform.localScale = localScale;
+        }
     }
 }

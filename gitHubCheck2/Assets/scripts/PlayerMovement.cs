@@ -7,7 +7,7 @@ public class PlayerMovement : MonoBehaviour
     public float horizontal;
     public float speed = 12f;
     public float jumpingPower = 16f;
-    private bool isFacingRight = true;
+    public bool isFacingRight = true;
     public bool isJumping;
     private int Jumps = 0;
     public int maxJumps = 1;
@@ -62,7 +62,9 @@ public class PlayerMovement : MonoBehaviour
     private bool JumpSliding = false;
 
 
-   
+    public bowAttack bowAttack;
+
+    public float stopSpeed = 1f;
 
 
     // Start is called before the first frame update
@@ -74,8 +76,11 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //kills the player if he is too low
-        
+
+        if (bowAttack.isShooting) 
+        {
+            stopSpeed -= Time.deltaTime;
+        }
         //resets extra momentum direction when the is no extra momentum
         if (extraMomentum == 0)
             extraMomentumDirection = transform.localScale.x;
@@ -88,13 +93,6 @@ public class PlayerMovement : MonoBehaviour
         //makes sure the momentum isnt negitive to negate possible errors (just to be safe)
         if (extraMomentum < 0)
             extraMomentum = 0;
-        //lower momentum if moving to other direction
-        if (extraMomentumDirection == horizontal * -1 && extraMomentumDirection != 0 && extraMomentum > 0.1f)
-        {
-            if (extraMomentum > 24f)
-                extraMomentum = 24f;
-            extraMomentum -= 0.1f;
-        }
         horizontal = Input.GetAxisRaw("Horizontal");
         if (horizontal > 0) horizontal = 1;
         if (horizontal < 0) horizontal = -1;
@@ -136,7 +134,6 @@ public class PlayerMovement : MonoBehaviour
         //always checks wall slide, jump and momentum
         WallSlide();
         WallJump();
-        Momentum();
         //flips the player when nessecery
         if (!isWallJumping)
         {
@@ -183,6 +180,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+
+
+        //lower momentum if moving to other direction
+        Momentum();
+           
+        if (extraMomentumDirection == horizontal * -1 && extraMomentumDirection != 0 && extraMomentum > 0.1f)
+        {
+            if (extraMomentum > 24f)
+                extraMomentum = 24f;
+            extraMomentum -= 1f;
+        }
         //if is dashing do nothing
         if (isDashing)
         {
@@ -193,6 +201,22 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(horizontal * speed / 3, rb.velocity.y+fastFallpower);
         }
+
+        else if (bowAttack.isShooting)
+        {
+
+            extraMomentum = 0f;          
+            if (stopSpeed > 0f)
+            {
+                rb.velocity = new Vector2(horizontal * speed * stopSpeed, rb.velocity.y);
+            }
+            else 
+            {
+                rb.velocity = new Vector2(0f , rb.velocity.y);
+            }
+               
+        }
+
         else if (IsSliding)
         {
             rb.velocity = new Vector2((slidingSpeed + preVel / 3) * slidingDirection, 0);
@@ -205,6 +229,7 @@ public class PlayerMovement : MonoBehaviour
         //other than that and when starting a bounce normal
         else if (!isWallJumping && !JumpSliding)
         {
+            stopSpeed = 1f;
             rb.velocity = new Vector2(horizontal * speed + extraMomentum * extraMomentumDirection, rb.velocity.y);
         }
     }
@@ -377,10 +402,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (extraMomentum > 0)
         {
-            extraMomentum -= 0.005f;
+            extraMomentum -= 0.001f;
             if (IsGrounded())
             {
-                extraMomentum -= 0.1f;
+                extraMomentum -= 0.075f;
             }
         }
     }

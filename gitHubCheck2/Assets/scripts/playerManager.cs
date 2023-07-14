@@ -5,33 +5,44 @@ using UnityEngine.SceneManagement;
 
 public class playerManager: MonoBehaviour
 {
-
+    //game objects
     private GameObject currentTeleporter;
     public GameObject player;
+    public GameObject smallSlime;
+
+    //rb
+    [SerializeField] public Rigidbody2D rb;
+
+    //scripts
+    public PlayerMovement PlayerMovement;
+    public bowAttack bowAttack;
+    public swordAttack swordAttack;
+
+    //animator
+    public Animator animator;
+    public Animator SlimeAnimator;
+
+    //particle system
+    public ParticleSystem smallSlimeExplosion;
+
+    //bools
+    public bool canTp = true;
+    public bool startTimer=false;
+    public bool killSmallSlime=false;
+
+    //floats
     public float tpTimer;
     public float tpTimerReset;
-    public bool canTp = true;
     public float health;
     public float resetHealth;
-    public PlayerMovement PlayerMovement;
     public float jumpTime;
     public float jumpTimeReset;
-    public bool startTimer=false;
     public float smallBoostPower;
 
-
-    private GameObject smallSlime;
-    [SerializeField] public Rigidbody2D rb;
 
     public int respawn;
 
 
-    public Animator animator;
-    public Animator SlimeAnimator;
-
-    public ParticleSystem smallSlimeExplosion;
-
-    public bool killSmallSlime=false;
 
     private void Start()
     {
@@ -102,10 +113,52 @@ public class playerManager: MonoBehaviour
             animator.SetBool("isSliding", false);
         }
 
-     
+        //bowAttack
+
+        if (bowAttack.isShooting)
+        {
+            animator.SetBool("isShooting", true);
+        }
+        else 
+        {
+            animator.SetBool("isShooting", false);
+        }
+
+        //attack1
+        if (swordAttack.isAttacking && swordAttack.attackNum == 1)
+        {
+            animator.SetBool("isAttacking1", true);
+        }
+        else
+        {
+            animator.SetBool("isAttacking1", false);
+        }
+
+        //attack2
+        if (swordAttack.isAttacking && swordAttack.attackNum == 2)
+        {
+            animator.SetBool("isAttacking2", true);
+        }
+        else
+        {
+
+            animator.SetBool("isAttacking2", false);
+        }
+
+        //attack3
+        if (swordAttack.isAttacking && swordAttack.attackNum == 3)
+        {
+            animator.SetBool("isAttacking3", true);
+        }
+        else
+        {
+
+            animator.SetBool("isAttacking3", false);
+        }
 
 
- 
+
+
 
 
 
@@ -216,7 +269,7 @@ public class playerManager: MonoBehaviour
 
         if (collision.gameObject.CompareTag("smallSlime"))
         {
-            if (PlayerMovement.isFastFalling)
+            if (PlayerMovement.isFastFalling  || (PlayerMovement.isDashing && Input.GetAxisRaw("Vertical") < 0f))
             {             
                  rb.velocity = new Vector2(rb.velocity.x, smallBoostPower);  
                 collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
@@ -228,17 +281,31 @@ public class playerManager: MonoBehaviour
                 SlimeAnimator.SetBool("isDead", true);
             }
 
-            else if (collision.gameObject.CompareTag("smallSlime") && !PlayerMovement.isDashing && !PlayerMovement.isFastFalling)
+            else if (!PlayerMovement.isDashing && !PlayerMovement.isFastFalling)
             {
                 SceneManager.LoadScene(respawn);
             }
         }
     }
 
-
+    public void killSlimeArrow(Collision2D collision)
+    {
+        if (PlayerMovement.isFastFalling || (PlayerMovement.isDashing && Input.GetAxisRaw("Vertical") < 0f))
+        {
+            rb.velocity = new Vector2(rb.velocity.x, smallBoostPower);
+            collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
+            smallSlimeExplosion.Play();
+            killSmallSlime = true;
+            StartCoroutine(KillWait(collision));
+            collision.gameObject.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePositionY;
+            smallSlime = collision.gameObject;
+            SlimeAnimator.SetBool("isDead", true);
+        }
+    }
 
     public IEnumerator KillWait(Collision2D collision)   
-    {  
+    {
+        
         yield return new WaitForSeconds(.7f);
         
         Destroy(smallSlime);
