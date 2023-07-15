@@ -8,7 +8,7 @@ public class swordAttack : MonoBehaviour
     private bool isReseting = false;
     public bool isAttacking = false;
     private bool wasAttacking = false;
-    private bool isKilling = false;
+    public bool isKilling = false;
     public int attackNum = 0;
     private float resetAttackTime = 1.25f;
     public PlayerMovement player;
@@ -29,7 +29,7 @@ public class swordAttack : MonoBehaviour
         {
             StartCoroutine(attackR());
         }
-        Debug.Log(attackNum);
+        //Debug.Log(attackNum);
         if (Input.GetButtonDown("sword") && !isAttacking && canAttack)
         {
             StartCoroutine(attack());
@@ -45,7 +45,7 @@ public class swordAttack : MonoBehaviour
         {
             yield return new WaitForSeconds(0.15f);
             isKilling = true;
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSeconds(0.30f);
 
         }
 
@@ -53,7 +53,7 @@ public class swordAttack : MonoBehaviour
         {
             yield return new WaitForSeconds(0.05f);
             isKilling = true;
-            yield return new WaitForSeconds(0.25f/2f);
+            yield return new WaitForSeconds(0.25f);
         }
 
         else if (attackNum == 3)
@@ -92,24 +92,14 @@ public class swordAttack : MonoBehaviour
     }
     private IEnumerator attackR()
     {
-        Debug.Log("0");
+        //Debug.Log("0");
         attackNum = 0;
         canAttack = false;
-        yield return new WaitForSeconds(0.25f);
+        yield return new WaitForSeconds(0.15f);
         canAttack = true;
     }
     
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        Debug.Log("a");
-        if (isKilling)
-        {
-            if (collision.CompareTag("smallSlime"))
-            {
-                Destroy(collision.gameObject);
-            }
-        }
-    }
+
     
 
 }

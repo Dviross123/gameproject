@@ -16,6 +16,7 @@ public class bowAttack : MonoBehaviour
     public float maxLauncForce;
 
     public bool isShooting;
+    public bool isMaxForce;
 
     // Update is called once per frame
     private void Start()
@@ -33,10 +34,12 @@ public class bowAttack : MonoBehaviour
             isShooting = true;
             if (launchForce < maxLauncForce)
             {
+                isMaxForce = false;
                 launchForce += Time.deltaTime * 14f;
             }
             else
             {
+                isMaxForce = true;
                 shootingTimer = resetShootingTimer;
                 Shoot();
                 launchForce = 10f;

@@ -17,13 +17,17 @@ public class playerManager: MonoBehaviour
     public PlayerMovement PlayerMovement;
     public bowAttack bowAttack;
     public swordAttack swordAttack;
+    public healthBar healthBar;
+    public killSlime killSlime;
+
 
     //animator
     public Animator animator;
     public Animator SlimeAnimator;
+    //public Animator SlimeAnimator;
 
     //particle system
-    public ParticleSystem smallSlimeExplosion;
+  //  public ParticleSystem smallSlimeExplosion;
 
     //bools
     public bool canTp = true;
@@ -49,6 +53,7 @@ public class playerManager: MonoBehaviour
         tpTimer = tpTimerReset;
         health = resetHealth;
         jumpTime = jumpTimeReset;
+        healthBar.SetHealth( health, resetHealth);
 
     }
 
@@ -60,8 +65,12 @@ public class playerManager: MonoBehaviour
             SceneManager.LoadScene(respawn);
         }
 
+
+        //animations
+        //animations
         //animations
 
+       
         //run
         if (Input.GetButton("Horizontal"))
         {
@@ -156,6 +165,19 @@ public class playerManager: MonoBehaviour
             animator.SetBool("isAttacking3", false);
         }
 
+        //killSlime
+        if (killSlime.slimeDeath)
+        {
+            SlimeAnimator.SetBool("isDead", true);
+
+        }
+        //explodeSlime
+        if (killSlime.smallSlimeExplode)
+        {
+            //smallSlimeExplosion.Play();
+            killSlime.smallSlimeExplode = false;
+        }
+
 
 
 
@@ -189,6 +211,7 @@ public class playerManager: MonoBehaviour
         if (collision.CompareTag("Bullet")) 
         {
             health--;
+            healthBar.SetHealth(health, resetHealth);
             Destroy(collision.gameObject);
         }
 
@@ -273,11 +296,11 @@ public class playerManager: MonoBehaviour
             {             
                  rb.velocity = new Vector2(rb.velocity.x, smallBoostPower);  
                 collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
-                smallSlimeExplosion.Play();
+               // smallSlimeExplosion.Play();
                 killSmallSlime = true;
                 StartCoroutine(KillWait(collision));
                 collision.gameObject.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePositionY;
-                smallSlime = collision.gameObject;
+                smallSlime = collision.gameObject;               
                 SlimeAnimator.SetBool("isDead", true);
             }
 
@@ -294,7 +317,7 @@ public class playerManager: MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, smallBoostPower);
             collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
-            smallSlimeExplosion.Play();
+          //  smallSlimeExplosion.Play();
             killSmallSlime = true;
             StartCoroutine(KillWait(collision));
             collision.gameObject.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePositionY;

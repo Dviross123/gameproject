@@ -154,8 +154,9 @@ public class PlayerMovement : MonoBehaviour
             isFastFalling = false;
         }
         //sliding
-        if (Input.GetButtonDown("Fire2") && IsGrounded())
+        if (Input.GetButtonDown("Fire2") && IsGrounded()  )
         {
+
             preVel = rb.velocity.x;
             preVel = Mathf.Abs(preVel);
             IsSliding = true;
@@ -202,6 +203,7 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(horizontal * speed / 3, rb.velocity.y+fastFallpower);
         }
 
+        //bow attack
         else if (bowAttack.isShooting)
         {
 

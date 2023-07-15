@@ -12,6 +12,9 @@ TagManager:
   - Ground
   - smallSlime
   - Bullet
+  - strongRobot
+  - sword
+  - arrow
   layers:
   - Default
   - TransparentFX

@@ -7,6 +7,7 @@ public class cameraShakescontroller : MonoBehaviour
     public Animator animator;
     public PlayerMovement playerMovement ;
     public playerManager playerManager;
+    public killSlime killSlime;
 
     // Start is called before the first frame update
     void Start()
@@ -27,14 +28,9 @@ public class cameraShakescontroller : MonoBehaviour
             animator.SetBool("playerDash", false);
         }
 
-       
-        //if (playerMovement.IsWalled() && timer > 0)
-        //{
-        //    animator.SetBool("isSticking", true);
-        //    timer = ResetTimer;
-        //}
 
 
 
     }
+    
 }
