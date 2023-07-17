@@ -43,7 +43,7 @@ public class swordAttack : MonoBehaviour
         attackNum++;
         if (attackNum == 1)
         {
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.05f);
             isKilling = true;
             yield return new WaitForSeconds(0.30f);
 

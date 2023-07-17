@@ -10,14 +10,17 @@ public class killSlime : MonoBehaviour
     private GameObject camera;
     private Animator animator;
     private BoxCollider2D box;
+    private Animator slimeAnimator;
 
     private void Start()
     {
         sword = GameObject.Find("sword");
         camera = GameObject.Find("MainCamera");
         animator = camera.GetComponent<Animator>();
+        slimeAnimator = gameObject.GetComponent<Animator>();
         box = gameObject.GetComponent<BoxCollider2D>();
     }
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -25,7 +28,11 @@ public class killSlime : MonoBehaviour
         {
             StartCoroutine(Die());
             animator.SetBool("slimeDie", true);
+            StartCoroutine(waitForShakeEnd());
+            slimeAnimator.SetBool("isDead", true);
         }
+
+        
 
      
     }
@@ -36,7 +43,11 @@ public class killSlime : MonoBehaviour
         {
             StartCoroutine(Die());
             animator.SetBool("slimeDie", true);
+             StartCoroutine(waitForShakeEnd());
+            slimeAnimator.SetBool("isDead", true);
         }
+
+        
         
 
     
@@ -51,6 +62,16 @@ public class killSlime : MonoBehaviour
         box.enabled = false;
         yield return new WaitForSeconds(0.8f);
         slimeDeath = false;
+        slimeAnimator.SetBool("isDead", true);
         Destroy(gameObject);
     }
+
+
+    private IEnumerator waitForShakeEnd() 
+    {
+        yield return new WaitForSeconds(0.3f);
+        animator.SetBool("slimeDie", false);
+    }
+    
+
 }

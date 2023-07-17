@@ -165,21 +165,6 @@ public class playerManager: MonoBehaviour
             animator.SetBool("isAttacking3", false);
         }
 
-        //killSlime
-        if (killSlime.slimeDeath)
-        {
-            SlimeAnimator.SetBool("isDead", true);
-
-        }
-        //explodeSlime
-        if (killSlime.smallSlimeExplode)
-        {
-            //smallSlimeExplosion.Play();
-            killSlime.smallSlimeExplode = false;
-        }
-
-
-
 
 
 

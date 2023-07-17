@@ -19,32 +19,35 @@ public class enemyshoot : MonoBehaviour
         timeBtwShots = startTimeBtwShots;
     }
 
-    
+
     void Update()
     {
-        if (Vector2.Distance(transform.position, player.position)<shootingDis) 
+        if (Vector2.Distance(transform.position, player.position) < shootingDis)
         {
-        if (timeBtwShots <= 0)
-        {
-            Instantiate(bullet, transform.position, Quaternion.identity);
-            timeBtwShots = startTimeBtwShots;
-        }
-        else 
-        {
-            timeBtwShots -= Time.deltaTime;
-        }
-        }
-        if (playerTrans.position.x < transform.position.x)
-        {
-            Vector3 localScale = transform.localScale;
-            localScale.x = -1f;
-            transform.localScale = localScale;
-        }
-        else 
-        {
-            Vector3 localScale = transform.localScale;
-            localScale.x = 1f;
-            transform.localScale = localScale;
+            if (timeBtwShots <= 0)
+            {
+                Instantiate(bullet, transform.position, Quaternion.identity);
+                timeBtwShots = startTimeBtwShots;
+            }
+            else
+            {
+                timeBtwShots -= Time.deltaTime;
+            }
+            if (Mathf.Abs(playerTrans.position.x - transform.position.x) >= 1)
+            {
+                if (playerTrans.position.x < transform.position.x)
+                {
+                    Vector3 localScale = transform.localScale;
+                    localScale.x = -1f;
+                    transform.localScale = localScale;
+                }
+                else
+                {
+                    Vector3 localScale = transform.localScale;
+                    localScale.x = 1f;
+                    transform.localScale = localScale;
+                }
+            }
         }
     }
 }
